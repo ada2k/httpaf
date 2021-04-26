@@ -176,6 +176,13 @@ module Oneshot = struct
 
   let read_with_more t bs ~off ~len more =
     let consumed = Reader.read_with_more t.reader bs ~off ~len more in
+    (match more with
+     | Incomplete -> ()
+     | Complete ->
+       match !(t.state) with
+       | Closed | Awaiting_response -> ()
+       | Received_response (_, response_body) ->
+         Body.close_reader response_body);
     flush_response_body t;
     consumed
   ;;

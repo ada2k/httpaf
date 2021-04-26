@@ -257,6 +257,36 @@ let test_failed_response_parse () =
   test (response_to_string response) 39 (`Invalid_response_body_length response);
 ;;
 
+let test_interrupted_streaming_response () =
+  let request' = Request.create `GET "/" in
+  let on_eof_called = ref false in
+
+  let response_handler _response body =
+    let on_eof () = on_eof_called := true in
+    let rec on_read _ ~off:_ ~len:_ = schedule_read ()
+    and schedule_read () = Body.schedule_read body ~on_read ~on_eof
+    in
+    schedule_read ()
+  in
+
+  let body, t = request request' ~response_handler ~error_handler:no_error_handler in
+  Body.close_writer body;
+  write_request  t request';
+  writer_closed  t;
+
+  read_response t (Response.create `OK ~headers:Headers.encoding_chunked);
+  let len = feed_string t "d\r\nHello, world!\r\n" in
+  (* The way the parser works right now, we read the chunk except for its trailing crlf,
+     so we only get 16 bytes here rather than 18. *)
+  Alcotest.(check int) "read chunk" 16 len;
+
+  let input = Bigstringaf.of_string "\r\n" ~off:0 ~len:2 in
+  let _ = read_eof t input ~off:0 ~len:2 in
+  connection_is_shutdown t;
+  (* A previous version of httpaf would fail to call on_eof in this case. *)
+  Alcotest.(check bool) "on_eof called" true !on_eof_called
+;;
+
 let tests =
   [ "GET"         , `Quick, test_get
   ; "Response EOF", `Quick, test_response_eof
@@ -264,4 +294,5 @@ let tests =
   ; "report_exn"  , `Quick, test_report_exn
   ; "input_shrunk", `Quick, test_input_shrunk
   ; "failed response parse", `Quick, test_failed_response_parse
+  ; "interrupted streaming response", `Quick, test_interrupted_streaming_response
   ]
