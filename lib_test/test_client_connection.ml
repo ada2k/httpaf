@@ -148,7 +148,7 @@ let test_response_eof () =
   Alcotest.(check int) "read_eof with no input returns 0" 0 c;
   connection_is_shutdown t;
   Alcotest.(check (option string)) "unexpected eof"
-    (Some "unexpected eof")
+    (Some ": not enough input")
     !error_message
 ;;
 
@@ -269,7 +269,10 @@ let test_interrupted_streaming_response () =
     schedule_read ()
   in
 
-  let body, t = request request' ~response_handler ~error_handler:no_error_handler in
+  let error = ref None in
+  let body, t =
+    request request' ~response_handler ~error_handler:(fun e -> error := Some e)
+  in
   Body.close_writer body;
   write_request  t request';
   writer_closed  t;
@@ -278,11 +281,12 @@ let test_interrupted_streaming_response () =
   let len = feed_string t "d\r\nHello, world!\r\n" in
   (* The way the parser works right now, we read the chunk except for its trailing crlf,
      so we only get 16 bytes here rather than 18. *)
-  Alcotest.(check int) "read chunk" 16 len;
+  Alcotest.(check int) "read chunk" 18 len;
 
   let input = Bigstringaf.of_string "\r\n" ~off:0 ~len:2 in
   let _ = read_eof t input ~off:0 ~len:2 in
-  connection_is_shutdown t;
+  Alcotest.(check (option response_error)) "Response error"
+    (Some (`Malformed_response ": count_while1")) !error;
   (* A previous version of httpaf would fail to call on_eof in this case. *)
   Alcotest.(check bool) "on_eof called" true !on_eof_called
 ;;
