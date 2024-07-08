@@ -33,6 +33,7 @@
 
 
 include Angstrom
+open Httpun_types
 
 module P = struct
   let is_space =

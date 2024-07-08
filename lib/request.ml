@@ -31,13 +31,15 @@
     POSSIBILITY OF SUCH DAMAGE.
   ----------------------------------------------------------------------------*)
 
+open Httpun_types
+
 type t =
   { meth    : Method.t
   ; target  : string
   ; version : Version.t
   ; headers : Headers.t }
 
-let create ?(version=Version.v1_1) ?(headers=Headers.empty) meth target =
+let create ?(version=Httpun_types.Version.v1_1) ?(headers=Headers.empty) meth target =
   { meth; target; version; headers }
 
 let bad_request = `Error `Bad_request
@@ -79,4 +81,4 @@ let persistent_connection ?proxy { version; headers; _ } =
 
 let pp_hum fmt { meth; target; version; headers } =
   Format.fprintf fmt "((method \"%a\") (target %S) (version \"%a\") (headers %a))"
-    Method.pp_hum meth target Version.pp_hum version Headers.pp_hum headers
+    Httpun_types.Method.pp_hum meth target Httpun_types.Version.pp_hum version Headers.pp_hum headers

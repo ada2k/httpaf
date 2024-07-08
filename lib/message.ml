@@ -31,6 +31,7 @@
     POSSIBILITY OF SUCH DAMAGE.
   ----------------------------------------------------------------------------*)
 
+open Httpun_types
 
 (* This module contains functionality that applies to both requests and
    responses, which are collectively referred to in the HTTP 1.1 specifications
