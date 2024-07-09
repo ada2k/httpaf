@@ -53,7 +53,7 @@ let writev socket iovecs =
   in
   match Eio.Flow.write socket cstructs with
   | () -> `Ok lenv
-  | exception End_of_file -> `Closed
+  | exception (End_of_file | Eio.Io (Eio.Net.E Connection_reset _, _)) -> `Closed
 
 module Server = struct
   let create_connection_handler ?(config = Config.default) ~error_handler ~request_handler socket client_addr =
@@ -92,8 +92,10 @@ module Server = struct
           Server_connection.report_write_result connection (writev socket io_vectors);
           write_loop_step ()
         | `Yield ->
+          print_endline "Yield";
           Server_connection.yield_writer connection write_loop
         | `Close _ ->
+          print_endline "Closed";
           Eio.Flow.shutdown socket `Send
       in
 
