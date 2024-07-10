@@ -129,8 +129,10 @@ let respond_with_string t response str =
     (* XXX(seliopou): check response body length *)
     Writer.write_response t.writer response;
     Writer.write_string t.writer str;
-    if t.persistent then
+    if t.persistent then (
+      print_endline "persistent";
       t.persistent <- Response.persistent_connection response;
+    );
     t.response_state <- Fixed response;
     Writer.wakeup t.writer;
   | Streaming _ ->

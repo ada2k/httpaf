@@ -41,7 +41,7 @@ let read fd buffer =
       Eio.Flow.single_read fd cstruct
     )
   with
-  | 0 -> `Eof
+  | 0 | exception End_of_file -> `Eof
   | read -> `Ok read
   | exception exn -> Eio.Flow.close fd; raise exn
 
@@ -92,10 +92,8 @@ module Server = struct
           Server_connection.report_write_result connection (writev socket io_vectors);
           write_loop_step ()
         | `Yield ->
-          print_endline "Yield";
           Server_connection.yield_writer connection write_loop
         | `Close _ ->
-          print_endline "Closed";
           Eio.Flow.shutdown socket `Send
       in
 
