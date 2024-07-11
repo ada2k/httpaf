@@ -129,11 +129,16 @@ let respond_with_string t response str =
     (* XXX(seliopou): check response body length *)
     Writer.write_response t.writer response;
     Writer.write_string t.writer str;
-    if t.persistent then (
-      print_endline "persistent";
+    if false then (
+      Logs.debug (fun m -> m "persistent");
       t.persistent <- Response.persistent_connection response;
     );
     t.response_state <- Fixed response;
+    Writer.flush t.writer (
+      function
+      | `Closed -> print_endline "Closed"
+      | `Written -> print_endline "Written"
+    );
     Writer.wakeup t.writer;
   | Streaming _ ->
     failwith "httpaf.Reqd.respond_with_string: response already started"
@@ -152,6 +157,7 @@ let respond_with_bigstring t response (bstr:Bigstringaf.t) =
       t.persistent <- Response.persistent_connection response;
     t.response_state <- Fixed response;
     Writer.wakeup t.writer;
+    Writer.flush t.writer (Fun.const ())
   | Streaming _ ->
     failwith "httpaf.Reqd.respond_with_bigstring: response already started"
   | Fixed _ ->

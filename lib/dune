@@ -2,5 +2,5 @@
  (name        httpaf)
  (public_name httpaf)
  (libraries
-   angstrom faraday bigstringaf httpun-types)
+   angstrom faraday bigstringaf httpun-types logs)
  (flags (:standard -safe-string)))

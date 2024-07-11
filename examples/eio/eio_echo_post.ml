@@ -1,8 +1,7 @@
 let () = Eio_main.run @@ fun env -> Eio.Switch.run @@ fun sw ->
   let request_handler _ reqd =
     let response = Httpaf.Response.create ~headers:(Httpun_types.Headers.of_list ["connection", "keep-alive"; "content-length", "12"]) `OK in
-    Httpaf.Reqd.respond_with_string reqd response "Hello World!"
-    (*let writer = Httpaf.Reqd.respond_with_streaming reqd response in
+    let writer = Httpaf.Reqd.respond_with_streaming ~flush_headers_immediately:true reqd response in
     (*
     let rec push () =
       Httpaf.Body.Writer.write_string writer "Chunk";
@@ -18,8 +17,7 @@ let () = Eio_main.run @@ fun env -> Eio.Switch.run @@ fun sw ->
         function
         | `Written -> Httpaf.Body.Writer.close writer
         | `Closed -> print_endline "Closed?"
-      )
-        *)
+    )
   in
   let handler = Httpaf_eio.Server.create_connection_handler ~error_handler:(fun _ ?request:_ error _ ->
     match error with
