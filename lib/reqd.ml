@@ -134,11 +134,7 @@ let respond_with_string t response str =
       t.persistent <- Response.persistent_connection response;
     );
     t.response_state <- Fixed response;
-    Writer.flush t.writer (
-      function
-      | `Closed -> print_endline "Closed"
-      | `Written -> print_endline "Written"
-    );
+    Writer.flush t.writer ignore;
     Writer.wakeup t.writer;
   | Streaming _ ->
     failwith "httpaf.Reqd.respond_with_string: response already started"
