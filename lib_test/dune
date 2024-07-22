@@ -3,14 +3,11 @@
  (modules
    helpers
    test_client_connection
-   test_headers
    test_httpaf
    test_iovec
-   test_method
    test_request
    test_response
-   test_server_connection
-   test_version)
+   test_server_connection)
  (names   test_httpaf))
 
 (alias

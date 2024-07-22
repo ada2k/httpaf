@@ -149,6 +149,10 @@ module Writer = struct
   let ready_to_write t = Writer.wakeup t.writer
 
   let flush t kontinue =
+    Faraday.flush t.faraday kontinue;
+    ready_to_write t
+
+  let flush_with_reason t kontinue =
     if Writer.is_closed t.writer then
       kontinue `Closed
     else begin

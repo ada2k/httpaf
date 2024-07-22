@@ -316,7 +316,7 @@ let streaming_handler ?(flush=false) response writes reqd =
     | w :: ws ->
       Body.Writer.write_string body w;
       writes := ws;
-      Body.Writer.flush body (function
+      Body.Writer.flush_with_reason body (function
         | `Closed -> ()
         | `Written -> write ())
   in
@@ -748,7 +748,7 @@ let test_chunked_encoding () =
     let response = Response.create `OK ~headers:Headers.encoding_chunked in
     let resp_body = Reqd.respond_with_streaming reqd response in
     Body.Writer.write_string resp_body "First chunk";
-    Body.Writer.flush resp_body (function
+    Body.Writer.flush_with_reason resp_body (function
       | `Closed -> assert false
       | `Written ->
         Body.Writer.write_string resp_body "Second chunk";
@@ -779,7 +779,7 @@ let test_chunked_encoding_for_error () =
       `Bad_request error;
     let body = start_response Headers.encoding_chunked in
     Body.Writer.write_string body "Bad";
-    Body.Writer.flush body (function
+    Body.Writer.flush_with_reason body (function
       | `Closed -> assert false
       | `Written ->
         Body.Writer.write_string body " request";
@@ -837,7 +837,7 @@ let test_body_writing_when_socket_closes () =
   let body = Option.get !body_ref in
   let check_flush ~expect service_writer =
     let flush_result = ref None in
-    Body.Writer.flush body (fun r -> flush_result := Some r);
+    Body.Writer.flush_with_reason body (fun r -> flush_result := Some r);
     service_writer ();
     Alcotest.(check' (option flush_result_testable))
       ~msg:"flush_result is as expected"

@@ -96,8 +96,8 @@ module Body : sig
         modified until a subsequent call to {!flush} has successfully
         completed. *)
 
-    val flush : t -> ([ `Written | `Closed ] -> unit) -> unit
-    (** [flush t f] makes all bytes in [t] available for writing to the awaiting output
+    val flush_with_reason : t -> ([ `Written | `Closed ] -> unit) -> unit
+    (** [flush_with_reason t f] makes all bytes in [t] available for writing to the awaiting output
         channel. Once those bytes have reached that output channel, [f `Written] will be
         called. If instead, the output channel is closed before all of those bytes are
         successfully written, [f `Closed] will be called.
@@ -105,6 +105,9 @@ module Body : sig
         The type of the output channel is runtime-dependent, as are guarantees
         about whether those packets have been queued for delivery or have
         actually been received by the intended recipient. *)
+
+    val flush: t -> (unit -> unit) -> unit
+    (** [flush t f] is identical to [flush_with_reason t], except ignoring the result of the flush. *)
 
     val close : t -> unit
     (** [close t] closes [t], causing subsequent write calls to raise. If
