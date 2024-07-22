@@ -100,7 +100,6 @@ module Server = struct
       try write_loop_step () with exn -> Server_connection.report_exn connection exn
     in
 
-    read_loop ();
-    write_loop ();
+    Eio.Fiber.both read_loop write_loop;
     Eio.Flow.close socket
 end

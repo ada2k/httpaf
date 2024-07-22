@@ -1,4 +1,4 @@
-ada2k: THIS IS NOT A REAL FORK!!! This is a way for me to quickly implement new features needed for Zimmerframe, and it's changes will eventually be turned into PR's
+ada2k: mostly a private fork for zimmerframe. use at your own risk!
 
 
 # http/af

@@ -1,3 +1,7 @@
 (executable
- (name eio_echo_post)
+ (name eio_respond_streaming)
+ (libraries httpaf-eio eio_main))
+
+(executable
+ (name eio_respond_string)
  (libraries httpaf-eio eio_main))
